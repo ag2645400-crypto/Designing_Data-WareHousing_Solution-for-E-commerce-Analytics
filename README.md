@@ -2,63 +2,120 @@
 
 ## Overview
 
-This project focuses on designing a data warehouse solution that helps e-commerce businesses organize data from different sources and turn it into useful business insights. It provides a structured approach to collecting, cleaning, integrating, and analyzing information such as orders, customers, products, payments, and sales.
-
-The goal is to make reporting easier and support data-driven decisions about sales performance, customer behavior, product performance, and business trends.
+This academic project demonstrates how raw e-commerce order data can be cleaned, loaded into a MySQL data warehouse, and analyzed using SQL. The goal is to turn source records into consistent reporting data for sales, products, customers, and orders.
 
 ## Project Objectives
 
-- Design a centralized repository for e-commerce data.
-- Explain the ETL process: Extract, Transform, and Load.
-- Organize data for efficient reporting and analysis.
-- Support analysis of sales, customers, products, and orders.
-- Provide a foundation for dashboards and business intelligence reports.
+- Design a centralized warehouse using a star schema.
+- Build a simple ETL pipeline: Extract, Transform, and Load.
+- Clean duplicate and invalid source rows.
+- Analyze sales performance by month, product, city, order status, and payment method.
+- Prepare a foundation for a future Power BI dashboard.
 
-## Proposed Data Warehouse Design
+## Architecture
 
-The solution can use a **star schema** with a central fact table and related dimension tables.
+CSV source data → Python + Pandas cleaning → MySQL warehouse → SQL analytics → (future) Power BI dashboard.
 
-- **Fact_Sales:** measures such as quantity, sales amount, discount, and profit (where available).
-- **Dim_Customer:** customer details and customer segments.
-- **Dim_Product:** product names, categories, and product details.
-- **Dim_Date:** day, month, quarter, and year for time-based analysis.
-- **Dim_Order:** order status, payment method, or other order attributes, depending on the available data.
+## Data Warehouse Design
 
-The final schema should be adapted to the source dataset and the requirements of the project.
+The warehouse uses a star-schema style model:
 
-## ETL Workflow
+- **fact_sales**: quantity, unit price, discount, gross sales, and net sales.
+- **dim_customer**: customer ID, name, and city.
+- **dim_product**: product ID, name, and category.
+- **dim_date**: full date, day, month, quarter, and year.
+- **dim_order**: order ID, payment method, and order status.
 
-1. **Extract:** collect data from available e-commerce datasets, CSV files, or database tables.
-2. **Transform:** clean missing or duplicate records, standardize formats, validate values, and combine related data.
-3. **Load:** load the prepared data into the designed warehouse tables.
-4. **Analyze:** query the warehouse to create summaries and reports for business users.
+The current sample data is fictional and intended for learning and demonstration. Replace it with an approved dataset before drawing conclusions about a real business.
 
-## Example Analytics
+## Repository Structure
 
-The warehouse design can support questions such as:
+```text
+.
+├── data/
+│   └── sample_ecommerce.csv
+├── sql/
+│   ├── schema.sql
+│   └── analytics_queries.sql
+├── etl.py
+├── requirements.txt
+└── README.md
+```
 
-- What are the total sales by month or year?
-- Which products and categories perform best?
-- How many orders are completed, pending, or cancelled?
-- Which customer groups contribute most to sales?
-- How do sales trends change over time?
+## Setup and Run
+
+### 1. Requirements
+
+- Python 3.10 or newer
+- MySQL Server and MySQL Workbench
+- VS Code (recommended)
+
+### 2. Create the database tables
+
+Open `sql/schema.sql` in MySQL Workbench and execute the script. It creates the `ecommerce_dw` database and the five warehouse tables.
+
+### 3. Install Python dependencies
+
+From the project folder, run:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### 4. Configure database access
+
+Set environment variables for your MySQL connection. For example, in Windows Command Prompt:
+
+```bat
+set DB_HOST=localhost
+set DB_PORT=3306
+set DB_USER=root
+set DB_PASSWORD=your_mysql_password
+set DB_NAME=ecommerce_dw
+```
+
+Use your own local MySQL password; do not commit passwords or secrets to GitHub.
+
+### 5. Run the ETL pipeline
+
+```bash
+python etl.py
+```
+
+By default, the pipeline reads `data/sample_ecommerce.csv`, validates required columns, removes duplicate rows, cleans invalid values, and loads the resulting records into MySQL. The current starter pipeline rebuilds the fact table on each run, so rerunning it will not duplicate the fact rows.
+
+### 6. Run analytics
+
+Execute `sql/analytics_queries.sql` in MySQL Workbench to view sample reports.
+
+## Source CSV Format
+
+The source CSV should contain these columns:
+
+`order_id, order_date, customer_id, customer_name, city, product_id, product_name, category, quantity, unit_price, discount, payment_method, order_status`
+
+To load another file, set the `SOURCE_FILE` environment variable to its path before running `python etl.py`.
+
+## Example Business Questions
+
+- What are net sales by month?
+- Which products generate the highest net sales?
+- Which cities contribute most to sales?
+- What is the distribution of completed, pending, and cancelled orders?
+- Which payment methods are used most often?
 
 ## Tools and Technologies
 
-The implementation tools may include **SQL** for data modelling and queries, **Python** for data cleaning and ETL, and a visualization tool such as **Power BI** or **Tableau** for dashboards. Use only the tools actually included in your implementation and update this section as the project develops.
+- **Python** and **Pandas** — data cleaning and ETL
+- **MySQL** — warehouse storage
+- **MySQL Workbench** — schema and query execution
+- **CSV** — sample source data
+- **Power BI** — planned future dashboard
 
-## Expected Outcome
+## Scope and Limitations
 
-A documented data warehouse design and workflow for transforming raw e-commerce data into structured, analysis-ready information. The design can help demonstrate how centralized data supports consistent reporting and better business decisions.
-
-## Project Scope
-
-This repository is for an academic project on data warehousing for e-commerce analytics. The exact dataset, schema, implementation, and results should be documented as they are completed.
+This is a student project starter implementation. The sample dataset is fictional, the data model is intentionally simple, and the ETL script is designed for local demonstration rather than production-scale workloads. Profit, inventory, shipping, and advanced customer segmentation are not included because the current source data does not provide the required fields.
 
 ## Author
 
 **Aditya Gupta**
-
----
-
-*If you use this project, please mention the source repository.*
