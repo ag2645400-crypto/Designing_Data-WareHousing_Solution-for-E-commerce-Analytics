@@ -22,7 +22,7 @@ def connect_db():
         host=os.getenv("DB_HOST", "localhost"),
         port=int(os.getenv("DB_PORT", "3306")),
         user=os.getenv("DB_USER", "root"),
-          password=os.getenv("DB_PASSWORD", ""),      
+        password=os.getenv("DB_PASSWORD", ""),
         database=os.getenv("DB_NAME", "ecommerce_dw"),
     )
 
@@ -36,18 +36,31 @@ def clean_data(path: Path) -> pd.DataFrame:
     if missing:
         raise ValueError(f"Missing required CSV columns: {', '.join(missing)}")
 
+    report = {"rows_read": len(df)}
+
     df = df[REQUIRED_COLUMNS].copy()
+    before = len(df)
     df = df.drop_duplicates()
+    report["duplicates_removed"] = before - len(df)
+
     df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
     for column in ["quantity", "unit_price", "discount"]:
         df[column] = pd.to_numeric(df[column], errors="coerce")
 
+    # Count each kind of invalid row before dropping them.
+    report["invalid_date"] = int(df["order_date"].isna().sum())
+    report["missing_quantity"] = int(df["quantity"].isna().sum())
+    report["non_positive_quantity"] = int((df["quantity"] <= 0).sum())
+
     # Reject rows that cannot produce a valid sales fact.
+    before = len(df)
     df = df.dropna(subset=[
         "order_id", "order_date", "customer_id", "product_id",
         "quantity", "unit_price",
     ])
     df = df[(df["quantity"] > 0) & (df["unit_price"] >= 0)]
+    report["invalid_rows_removed"] = before - len(df)
+
     df["discount"] = df["discount"].fillna(0).clip(lower=0)
     df["quantity"] = df["quantity"].astype(int)
 
@@ -59,6 +72,8 @@ def clean_data(path: Path) -> pd.DataFrame:
         df[column] = df[column].fillna("Unknown").astype(str).str.strip()
         df.loc[df[column] == "", column] = "Unknown"
 
+    report["rows_clean"] = len(df)
+    df.attrs["report"] = report
     return df
 
 
@@ -142,6 +157,16 @@ def load_data(df: pd.DataFrame) -> int:
 
 def main():
     df = clean_data(SOURCE_FILE)
+    report = df.attrs["report"]
+    print("--- Data Quality Report ---")
+    print(f"Rows read from CSV      : {report['rows_read']}")
+    print(f"Duplicates removed      : {report['duplicates_removed']}")
+    print(f"Invalid dates           : {report['invalid_date']}")
+    print(f"Missing quantity        : {report['missing_quantity']}")
+    print(f"Non-positive quantity   : {report['non_positive_quantity']}")
+    print(f"Invalid rows removed    : {report['invalid_rows_removed']}")
+    print(f"Clean rows              : {report['rows_clean']}")
+    print("---------------------------")
     loaded = load_data(df)
     print(f"ETL completed successfully. Loaded {loaded} sales rows from {SOURCE_FILE}")
 
