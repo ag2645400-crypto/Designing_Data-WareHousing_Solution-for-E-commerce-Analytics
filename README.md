@@ -116,6 +116,33 @@ To load another file, set the `SOURCE_FILE` environment variable to its path bef
 
 This is a student project starter implementation. The sample dataset is fictional, the data model is intentionally simple, and the ETL script is designed for local demonstration rather than production-scale workloads. Profit, inventory, shipping, and advanced customer segmentation are not included because the current source data does not provide the required fields.
 
+## Sample Output
+
+Note: cancelled orders are excluded from sales analysis.
+
+### Monthly Net Sales
+![Monthly Sales](screenshots/monthly_sales.png)
+
+### Top Products
+![Top Products](screenshots/top_products.png)
+
+### City-wise Sales
+![City Sales](screenshots/city_sales.png)
+
+### Order Status Distribution
+![Order Status](screenshots/order_status.png)
+
+### Payment Method Performance
+![Payment Methods](screenshots/payment_methods.png)
+
+## Key Insights
+
+- Net sales declined month over month: January 2431, February 1227, March 747.
+- Wireless Mouse earned the most revenue (1747), while USB-C Cable sold the most units (5).
+- Delhi had the highest net sales (1472), followed by Greater Noida and Noida.
+- UPI led payment methods with 2219 in net sales.
+- 6 of 8 orders were completed (75% completion rate).
+
 ## Author
 
 **Aditya Gupta**
